@@ -1,784 +1,1203 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Sermon & Day Planner</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>ACX Pro Tools Checklist</title>
 <style>
-  /* ── Base ── */
-  *, *::before, *::after { box-sizing: border-box; }
-  body {
-    font-family: 'Georgia', serif;
-    background: #F0EBE3;
-    margin: 0; padding: 0; color: #1a1a1a;
+  :root {
+    --bg: #0e0e12;
+    --surface: #17171f;
+    --card: #1e1e28;
+    --card2: #252530;
+    --border: #2e2e3d;
+    --accent: #00c9a7;
+    --accent2: #7b61ff;
+    --accent3: #ff6b6b;
+    --accent4: #ffd166;
+    --text: #f0f0f5;
+    --text2: #9999b5;
+    --text3: #666680;
+    --progress-h: 4px;
+    --radius: 20px;
+    --radius-sm: 12px;
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-top: env(safe-area-inset-top, 0px);
+    font-family: -apple-system, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif;
   }
 
-  /* ── Header ── */
-  header {
-    background: linear-gradient(135deg, #1B2D45 0%, #274d73 60%, #2C8C7C 100%);
-    color: white;
-    padding: 24px 20px 20px;
-    text-align: center;
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overscroll-behavior: none;
   }
-  header h1 {
-    margin: 0 0 4px;
-    font-size: 1.8em;
+
+  /* ── HEADER ── */
+  .header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(14,14,18,0.92);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    padding: calc(var(--safe-top) + 10px) 16px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 10px;
+  }
+
+  .header-title {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .header-title span:first-child {
+    font-size: 11px;
+    font-weight: 600;
     letter-spacing: 2px;
-    font-weight: 700;
     text-transform: uppercase;
-  }
-  header p {
-    margin: 0;
-    font-size: 0.85em;
-    opacity: 0.75;
-    letter-spacing: 1px;
-    font-style: italic;
+    color: var(--accent);
   }
 
-  /* ── Save indicator ── */
-  #saveIndicator {
-    position: fixed;
-    top: 12px; right: 16px;
-    background: rgba(44,140,124,0.92);
-    color: white;
-    font-size: 0.78em;
-    padding: 5px 12px;
-    border-radius: 20px;
-    opacity: 0;
-    transition: opacity 0.4s;
-    z-index: 999;
-    pointer-events: none;
-    font-family: system-ui, sans-serif;
-  }
-  #saveIndicator.show { opacity: 1; }
-
-  /* ── Navigation tabs ── */
-  nav {
-    background: #1B2D45;
-    display: flex;
-    overflow-x: auto;
-    scrollbar-width: none;
-    -webkit-overflow-scrolling: touch;
-  }
-  nav::-webkit-scrollbar { display: none; }
-  nav button {
-    flex: 0 0 auto;
-    padding: 12px 18px;
-    background: none;
-    border: none;
-    color: rgba(255,255,255,0.6);
-    font-size: 0.82em;
-    cursor: pointer;
-    white-space: nowrap;
-    font-family: system-ui, sans-serif;
-    letter-spacing: 0.5px;
-    border-bottom: 3px solid transparent;
-    transition: all 0.2s;
-  }
-  nav button.active {
-    color: #E8763A;
-    border-bottom-color: #E8763A;
-    font-weight: 600;
-  }
-  nav button:hover:not(.active) {
-    color: rgba(255,255,255,0.9);
-    background: rgba(255,255,255,0.06);
-  }
-
-  /* ── Container ── */
-  .container { max-width: 860px; margin: auto; padding: 22px 16px 60px; }
-
-  /* ── Tabs ── */
-  .tab-panel { display: none; }
-  .tab-panel.active { display: block; }
-
-  /* ── Cards ── */
-  .card {
-    background: white;
-    border-radius: 12px;
-    padding: 22px 20px;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
-    border-left: 4px solid transparent;
-  }
-  .card.accent-orange { border-left-color: #E8763A; }
-  .card.accent-teal   { border-left-color: #2C8C7C; }
-  .card.accent-navy   { border-left-color: #1B2D45; }
-  .card.accent-gold   { border-left-color: #F0B429; }
-
-  h2 {
-    margin: 0 0 14px;
-    font-size: 1.05em;
+  .header-title span:last-child {
+    font-size: 18px;
     font-weight: 700;
-    color: #1B2D45;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    font-family: system-ui, sans-serif;
+    color: var(--text);
+    letter-spacing: -0.3px;
   }
 
-  /* ── Section labels (ME/WE/etc) ── */
-  .section-block { margin-bottom: 18px; }
-  .section-block:last-child { margin-bottom: 0; }
-  .section-label {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 7px;
-  }
-  .section-badge {
-    display: inline-block;
-    min-width: 52px;
-    text-align: center;
-    padding: 3px 10px;
-    border-radius: 20px;
-    font-size: 0.78em;
-    font-weight: 700;
-    letter-spacing: 1px;
-    font-family: system-ui, sans-serif;
-    color: white;
-  }
-  .badge-me  { background: #E8763A; }
-  .badge-we  { background: #1B2D45; }
-  .badge-god { background: #2C8C7C; }
-  .badge-you { background: #F0B429; color: #1a1a1a; }
-  .badge-we2 { background: #1B2D45; }
-  .section-desc {
-    font-size: 0.8em;
-    color: #888;
-    font-family: system-ui, sans-serif;
-    font-style: italic;
+  .hamburger {
+    width: 40px; height: 40px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 5px; cursor: pointer;
+    background: var(--card); border-radius: 10px;
+    border: 1px solid var(--border);
+    flex-shrink: 0;
   }
 
-  /* ── Inputs ── */
-  textarea {
-    width: 100%;
-    min-height: 110px;
-    border: 1.5px solid #ddd;
-    border-radius: 8px;
-    padding: 12px;
-    font-size: 1em;
-    resize: vertical;
-    background: #FAFAF8;
-    font-family: 'Georgia', serif;
-    color: #1a1a1a;
-    line-height: 1.6;
-    transition: border-color 0.2s;
+  .hamburger span {
+    display: block; width: 18px; height: 2px;
+    background: var(--text); border-radius: 2px;
+    transition: all 0.3s ease;
   }
-  textarea:focus { outline: none; border-color: #3a6ea5; background: white; }
 
-  textarea.bottom-line-ta {
-    min-height: 60px;
-    font-size: 1.15em;
-    font-style: italic;
-    color: #1B2D45;
-    font-weight: 600;
-    border-color: #E8763A;
-    border-width: 2px;
+  .hamburger.open span:nth-child(1) { transform: rotate(45deg) translate(5px,5px); }
+  .hamburger.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+  .hamburger.open span:nth-child(3) { transform: rotate(-45deg) translate(5px,-5px); }
+
+  /* ── PROGRESS BAR ── */
+  .progress-wrap {
+    padding: 8px 0 0;
   }
-  textarea.bottom-line-ta:focus { border-color: #c45d20; }
 
-  input[type="text"] {
-    width: 100%;
-    padding: 11px 14px;
-    font-size: 0.98em;
-    border-radius: 8px;
-    border: 1.5px solid #ddd;
-    background: #FAFAF8;
-    font-family: system-ui, sans-serif;
-    transition: border-color 0.2s;
+  .progress-labels {
+    display: flex; justify-content: space-between;
+    font-size: 11px; color: var(--text3); margin-bottom: 5px;
   }
-  input[type="text"]:focus { outline: none; border-color: #3a6ea5; background: white; }
 
-  /* ── Verses ── */
-  .verse-row {
-    display: flex;
-    gap: 8px;
+  .progress-track {
+    height: var(--progress-h);
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 2px;
+    transition: width 0.4s cubic-bezier(0.4,0,0.2,1);
+    width: 0%;
+  }
+
+  .section-progress-row {
+    display: flex; gap: 6px; margin-top: 8px; padding-bottom: 10px;
+  }
+
+  .section-pip {
+    flex: 1; height: 3px; border-radius: 2px;
+    background: var(--border); overflow: hidden; cursor: pointer;
+  }
+
+  .section-pip-fill {
+    height: 100%; width: 0%;
+    border-radius: 2px;
+    transition: width 0.4s ease;
+  }
+
+  .section-pip[data-section="0"] .section-pip-fill { background: var(--accent); }
+  .section-pip[data-section="1"] .section-pip-fill { background: var(--accent2); }
+  .section-pip[data-section="2"] .section-pip-fill { background: var(--accent3); }
+  .section-pip[data-section="3"] .section-pip-fill { background: var(--accent4); }
+
+  /* ── DRAWER NAV ── */
+  .drawer-overlay {
+    position: fixed; inset: 0; z-index: 200;
+    background: rgba(0,0,0,0.6);
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.3s ease;
+    backdrop-filter: blur(4px);
+  }
+
+  .drawer-overlay.open { opacity: 1; pointer-events: all; }
+
+  .drawer {
+    position: fixed; top: 0; right: 0; bottom: 0; z-index: 201;
+    width: 280px;
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+    transform: translateX(100%);
+    transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
+    padding: calc(var(--safe-top) + 60px) 0 calc(var(--safe-bottom) + 20px);
+    display: flex; flex-direction: column; gap: 0;
+    overflow-y: auto;
+  }
+
+  .drawer.open { transform: translateX(0); }
+
+  .drawer-header {
+    padding: 0 20px 20px;
+    border-bottom: 1px solid var(--border);
     margin-bottom: 8px;
-    align-items: center;
   }
-  .verse-row input { flex: 1; }
-  .verse-remove {
-    flex: 0 0 auto;
-    background: #fee;
-    border: none;
-    border-radius: 6px;
-    color: #c00;
-    width: 34px; height: 34px;
+
+  .drawer-header h3 {
+    font-size: 13px; font-weight: 700;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--text2);
+  }
+
+  .drawer-item {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 20px;
     cursor: pointer;
-    font-size: 1.1em;
-    display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s;
+    border-radius: 0;
+  }
+
+  .drawer-item:active { background: var(--card); }
+
+  .drawer-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%; flex-shrink: 0;
+  }
+
+  .drawer-item-label { font-size: 15px; font-weight: 500; }
+
+  .drawer-item-count {
+    margin-left: auto;
+    font-size: 12px; color: var(--text3);
+  }
+
+  .drawer-reset {
+    margin: 16px 20px 0;
+    padding: 12px;
+    background: rgba(255,107,107,0.1);
+    border: 1px solid rgba(255,107,107,0.2);
+    border-radius: var(--radius-sm);
+    color: var(--accent3);
+    font-size: 14px; font-weight: 600;
+    text-align: center; cursor: pointer;
     transition: background 0.15s;
   }
-  .verse-remove:hover { background: #fcc; }
 
-  /* ── Buttons ── */
-  .btn {
-    display: inline-block;
-    padding: 11px 20px;
-    border: none;
-    border-radius: 8px;
+  .drawer-reset:active { background: rgba(255,107,107,0.2); }
+
+  /* ── MAIN CONTENT ── */
+  .main {
+    padding: 16px 14px calc(var(--safe-bottom) + 100px);
+    display: flex; flex-direction: column; gap: 14px;
+  }
+
+  /* ── SECTION CARD ── */
+  .section-card {
+    background: var(--card);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    overflow: hidden;
+    transition: box-shadow 0.3s ease;
+  }
+
+  .section-card:has(.section-complete) {
+    border-color: rgba(0,201,167,0.3);
+    box-shadow: 0 0 0 1px rgba(0,201,167,0.1), 0 8px 32px rgba(0,0,0,0.4);
+  }
+
+  .section-header {
+    display: flex; align-items: center;
+    padding: 16px 16px;
     cursor: pointer;
-    font-size: 0.92em;
-    font-family: system-ui, sans-serif;
-    font-weight: 600;
-    letter-spacing: 0.3px;
-    transition: all 0.18s;
-    margin-right: 10px;
-    margin-top: 8px;
+    gap: 12px;
+    user-select: none;
+    -webkit-user-select: none;
   }
-  .btn-primary   { background: #1B2D45; color: white; }
-  .btn-primary:hover { background: #274d73; }
-  .btn-orange    { background: #E8763A; color: white; }
-  .btn-orange:hover { background: #c45d20; }
-  .btn-teal      { background: #2C8C7C; color: white; }
-  .btn-teal:hover { background: #1f6b5e; }
-  .btn-secondary { background: #eee; color: #333; }
-  .btn-secondary:hover { background: #ddd; }
 
-  /* ── Tips accordion ── */
-  details {
-    background: #F7F3EE;
-    border-radius: 8px;
-    padding: 12px 16px;
-    margin-bottom: 10px;
-    border-left: 3px solid #2C8C7C;
+  .section-icon {
+    width: 38px; height: 38px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
   }
-  details summary {
+
+  .section-icon-0 { background: rgba(0,201,167,0.15); }
+  .section-icon-1 { background: rgba(123,97,255,0.15); }
+  .section-icon-2 { background: rgba(255,107,107,0.15); }
+  .section-icon-3 { background: rgba(255,209,102,0.15); }
+
+  .section-meta { flex: 1; min-width: 0; }
+
+  .section-name {
+    font-size: 15px; font-weight: 700;
+    color: var(--text); line-height: 1.2;
+  }
+
+  .section-sub {
+    font-size: 12px; color: var(--text3);
+    margin-top: 2px;
+  }
+
+  .section-badge {
+    font-size: 12px; font-weight: 700;
+    padding: 4px 10px; border-radius: 20px;
+    flex-shrink: 0;
+  }
+
+  .badge-0 { background: rgba(0,201,167,0.15); color: var(--accent); }
+  .badge-1 { background: rgba(123,97,255,0.15); color: var(--accent2); }
+  .badge-2 { background: rgba(255,107,107,0.15); color: var(--accent3); }
+  .badge-3 { background: rgba(255,209,102,0.15); color: var(--accent4); }
+
+  .section-chevron {
+    font-size: 11px; color: var(--text3);
+    transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+    flex-shrink: 0;
+  }
+
+  .section-body {
+    max-height: 0; overflow: hidden;
+    transition: max-height 0.4s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  .section-body.open { max-height: 9999px; }
+  .section-card.expanded .section-chevron { transform: rotate(180deg); }
+
+  .section-divider {
+    height: 1px; background: var(--border);
+    margin: 0 16px;
+  }
+
+  /* ── CHECK ITEMS ── */
+  .check-item {
+    border-bottom: 1px solid var(--border);
+  }
+
+  .check-item:last-child { border-bottom: none; }
+
+  .check-row {
+    display: flex; align-items: flex-start;
+    padding: 14px 16px; gap: 12px;
     cursor: pointer;
-    font-weight: 600;
-    font-size: 0.95em;
-    color: #1B2D45;
-    font-family: system-ui, sans-serif;
-    list-style: none;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  details summary::before { content: '▶'; font-size: 0.7em; color: #2C8C7C; transition: transform 0.2s; }
-  details[open] summary::before { transform: rotate(90deg); }
-  details ul { margin: 10px 0 4px 18px; line-height: 1.7; font-family: system-ui, sans-serif; font-size: 0.92em; color: #333; }
-
-  /* ── Help note ── */
-  .help-note {
-    font-size: 0.82em;
-    color: #888;
-    margin-top: 6px;
-    font-family: system-ui, sans-serif;
-    font-style: italic;
+    transition: background 0.15s;
+    user-select: none;
+    -webkit-user-select: none;
   }
 
-  /* ── Footer ── */
-  footer {
-    background: #1B2D45;
-    color: rgba(255,255,255,0.5);
+  .check-row:active { background: var(--card2); }
+
+  .check-box {
+    width: 24px; height: 24px;
+    border-radius: 7px;
+    border: 2px solid var(--border);
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s cubic-bezier(0.4,0,0.2,1);
+    margin-top: 1px;
+  }
+
+  .check-box.checked {
+    border-color: var(--accent);
+    background: var(--accent);
+  }
+
+  .check-box.checked::after {
+    content: '✓';
+    color: #000;
+    font-size: 14px;
+    font-weight: 800;
+    line-height: 1;
+  }
+
+  .check-sec-1 .check-box.checked { border-color: var(--accent2); background: var(--accent2); }
+  .check-sec-2 .check-box.checked { border-color: var(--accent3); background: var(--accent3); }
+  .check-sec-3 .check-box.checked { border-color: var(--accent4); background: var(--accent4); }
+  .check-sec-3 .check-box.checked::after { color: #222; }
+
+  .check-label-wrap { flex: 1; }
+
+  .check-label {
+    font-size: 14px; font-weight: 600;
+    color: var(--text); line-height: 1.3;
+    transition: color 0.2s;
+  }
+
+  .check-row.checked-row .check-label {
+    color: var(--text3);
+    text-decoration: line-through;
+    text-decoration-color: var(--text3);
+  }
+
+  .check-hint {
+    font-size: 11px; color: var(--text3);
+    margin-top: 2px;
+  }
+
+  .check-expand-btn {
+    font-size: 11px; color: var(--text3);
+    transition: transform 0.25s ease;
+    flex-shrink: 0; padding-top: 3px;
+  }
+
+  .check-item.expanded .check-expand-btn { transform: rotate(180deg); }
+
+  /* ── ITEM DETAIL ── */
+  .item-detail {
+    max-height: 0; overflow: hidden;
+    transition: max-height 0.35s cubic-bezier(0.4,0,0.2,1);
+    background: var(--card2);
+  }
+
+  .item-detail.open { max-height: 800px; }
+
+  .item-detail-inner {
+    padding: 0 16px 16px 52px;
+  }
+
+  .detail-block {
+    margin-bottom: 12px;
+  }
+
+  .detail-label {
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--text3); margin-bottom: 6px;
+  }
+
+  .detail-body {
+    font-size: 13px; color: var(--text2); line-height: 1.5;
+  }
+
+  .detail-body strong { color: var(--text); }
+
+  .detail-chip-row {
+    display: flex; flex-wrap: wrap; gap: 6px;
+    margin-top: 4px;
+  }
+
+  .detail-chip {
+    font-size: 11px; font-weight: 600;
+    padding: 4px 10px; border-radius: 20px;
+    background: var(--border); color: var(--text2);
+  }
+
+  .notes-label {
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--text3); margin-bottom: 6px;
+  }
+
+  .notes-field {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-size: 13px;
+    font-family: inherit;
+    padding: 10px 12px;
+    resize: none;
+    min-height: 60px;
+    outline: none;
+    transition: border-color 0.2s;
+    line-height: 1.5;
+  }
+
+  .notes-field:focus { border-color: var(--accent); }
+  .notes-field::placeholder { color: var(--text3); }
+
+  /* ── BOTTOM SUMMARY CARD ── */
+  .summary-card {
+    background: var(--card);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    padding: 16px;
+    display: flex; flex-direction: column; gap: 12px;
+  }
+
+  .summary-title {
+    font-size: 12px; font-weight: 700;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--text3);
+  }
+
+  .summary-row {
+    display: flex; align-items: center; gap: 10px;
+  }
+
+  .summary-dot {
+    width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+  }
+
+  .summary-name { font-size: 13px; flex: 1; color: var(--text2); }
+  .summary-frac { font-size: 12px; font-weight: 700; color: var(--text3); }
+
+  .summary-mini-bar {
+    width: 60px; height: 4px;
+    background: var(--border); border-radius: 2px; overflow: hidden;
+  }
+
+  .summary-mini-fill { height: 100%; border-radius: 2px; transition: width 0.4s ease; }
+
+  /* ── COMPLETE BANNER ── */
+  .complete-banner {
+    display: none;
+    background: linear-gradient(135deg, rgba(0,201,167,0.15), rgba(123,97,255,0.15));
+    border: 1px solid rgba(0,201,167,0.3);
+    border-radius: var(--radius);
+    padding: 20px;
     text-align: center;
-    padding: 14px;
-    font-size: 0.78em;
-    font-style: italic;
-    font-family: system-ui, sans-serif;
-    margin-top: 20px;
   }
 
-  /* ── Mobile ── */
-  @media (max-width: 600px) {
-    header h1 { font-size: 1.3em; }
-    nav button { padding: 11px 14px; font-size: 0.78em; }
-    .container { padding: 14px 12px 60px; }
-    .card { padding: 16px 14px; }
-    .btn { width: 100%; margin-right: 0; margin-bottom: 8px; display: block; text-align: center; }
-    textarea { font-size: 1em; min-height: 90px; }
+  .complete-banner.show { display: block; }
+
+  .complete-banner h2 {
+    font-size: 22px; font-weight: 800;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 6px;
+  }
+
+  .complete-banner p {
+    font-size: 13px; color: var(--text2);
+  }
+
+  /* ── TOOLTIP-STYLE SPEC TAGS ── */
+  .spec-row {
+    display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px;
+  }
+
+  .spec-tag {
+    font-size: 11px; font-weight: 700;
+    padding: 3px 9px; border-radius: 6px;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid var(--border);
+    color: var(--text2); font-family: 'SF Mono', 'Courier New', monospace;
+    letter-spacing: 0;
+  }
+
+  .spec-tag.accent { border-color: var(--accent); color: var(--accent); }
+  .spec-tag.accent2 { border-color: var(--accent2); color: var(--accent2); }
+  .spec-tag.accent3 { border-color: var(--accent3); color: var(--accent3); }
+  .spec-tag.accent4 { border-color: var(--accent4); color: var(--accent4); }
+
+  /* ── SECTION JUMP ── */
+  .jump-scroll { scroll-margin-top: 160px; }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed; bottom: calc(var(--safe-bottom) + 80px); left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--card2); border: 1px solid var(--border);
+    border-radius: 30px; padding: 10px 20px;
+    font-size: 13px; font-weight: 600; color: var(--text);
+    opacity: 0; pointer-events: none; z-index: 999;
+    transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+    white-space: nowrap;
+  }
+
+  .toast.show {
+    opacity: 1; transform: translateX(-50%) translateY(0);
   }
 </style>
 </head>
 <body>
 
-<div id="saveIndicator">✓ Saved</div>
-
-<header>
-  <h1>Sermon &amp; Day Planner</h1>
-  <p>Prepare · Preach · Plan</p>
-</header>
-
-<nav id="mainNav">
-  <button class="active" onclick="showTab('sermon')">📖 Sermon</button>
-  <button onclick="showTab('outline')">🗂 Outline</button>
-  <button onclick="showTab('ideas')">💡 Ideas</button>
-  <button onclick="showTab('daily')">📅 Daily Plan</button>
-  <button onclick="showTab('tips')">🎤 Tips</button>
-  <button onclick="showTab('export')">⬇ Export</button>
-</nav>
-
-<div class="container">
-
-  <!-- ══════════ TAB: SERMON ══════════ -->
-  <div id="tab-sermon" class="tab-panel active">
-
-    <div class="card accent-orange">
-      <h2>Bottom Line</h2>
-      <textarea id="bottomLine" class="bottom-line-ta" placeholder="One memorable sentence that captures your entire sermon…" oninput="scheduleSave()"></textarea>
-      <p class="help-note">This appears first in every export. Make it singular and sticky.</p>
+<!-- HEADER -->
+<div class="header" id="top">
+  <div class="header-row">
+    <div class="header-title">
+      <span>Pro Tools ACX</span>
+      <span>Production Checklist</span>
     </div>
-
-    <div class="card accent-teal">
-      <h2>Sermon Notes</h2>
-      <textarea id="sermonNotes" style="min-height:160px;" placeholder="Full sermon notes, Scripture references, key points…" oninput="scheduleSave()"></textarea>
-    </div>
-
-    <div class="card accent-navy">
-      <h2>Reference Verses</h2>
-      <div id="versesContainer"></div>
-      <button class="btn btn-secondary" onclick="addVerse()">+ Add Verse</button>
-    </div>
-
-    <div class="card accent-gold">
-      <h2>Illustrations</h2>
-      <textarea id="illustrations" placeholder="Stories, analogies, or illustrations that bring the message to life…" oninput="scheduleSave()"></textarea>
-    </div>
-
-  </div>
-
-  <!-- ══════════ TAB: OUTLINE (ME–WE–GOD–YOU–WE) ══════════ -->
-  <div id="tab-outline" class="tab-panel">
-
-    <div class="card" style="border-left:4px solid #E8763A; background:#fff8f5;">
-      <p style="margin:0 0 4px; font-size:0.82em; color:#888; font-family:system-ui,sans-serif; font-style:italic;">Andy Stanley's talk structure — fill in each section for a complete outline.</p>
-    </div>
-
-    <div class="card accent-orange">
-      <div class="section-block">
-        <div class="section-label">
-          <span class="section-badge badge-me">ME</span>
-          <span class="section-desc">Personal connection — your story that opens the tension</span>
-        </div>
-        <textarea id="meSection" placeholder="Start with a personal story or experience that draws the audience in…" oninput="scheduleSave()"></textarea>
-      </div>
-    </div>
-
-    <div class="card accent-navy">
-      <div class="section-block">
-        <div class="section-label">
-          <span class="section-badge badge-we">WE</span>
-          <span class="section-desc">Shared experience — the universal tension everyone feels</span>
-        </div>
-        <textarea id="weSection" placeholder="Expand the tension to include the whole audience — 'We've all been there…'" oninput="scheduleSave()"></textarea>
-      </div>
-    </div>
-
-    <div class="card accent-teal">
-      <div class="section-block">
-        <div class="section-label">
-          <span class="section-badge badge-god">GOD</span>
-          <span class="section-desc">Scripture and teaching — what God says about this tension</span>
-        </div>
-        <textarea id="godSection" placeholder="Scripture text, theological point, and explanation…" oninput="scheduleSave()"></textarea>
-      </div>
-    </div>
-
-    <div class="card accent-gold">
-      <div class="section-block">
-        <div class="section-label">
-          <span class="section-badge badge-you">YOU</span>
-          <span class="section-desc">Specific call to action — what should they do this week?</span>
-        </div>
-        <textarea id="youSection" placeholder="A single, concrete next step for each person in the room…" oninput="scheduleSave()"></textarea>
-      </div>
-    </div>
-
-    <div class="card" style="border-left:4px solid #1B2D45;">
-      <div class="section-block">
-        <div class="section-label">
-          <span class="section-badge badge-we2">WE</span>
-          <span class="section-desc">Closing vision — what could our community look like if everyone acted?</span>
-        </div>
-        <textarea id="we2Section" placeholder="Paint the picture of collective transformation — send them out with vision…" oninput="scheduleSave()"></textarea>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- ══════════ TAB: IDEAS ══════════ -->
-  <div id="tab-ideas" class="tab-panel">
-    <div class="card accent-gold">
-      <h2>Sermon Ideas</h2>
-      <textarea id="sermonIdeas" style="min-height:200px;" placeholder="Future series, topic seeds, one-liners, questions worth exploring…" oninput="saveIdeas()"></textarea>
+    <div class="hamburger" id="hamburger" onclick="toggleDrawer()">
+      <span></span><span></span><span></span>
     </div>
   </div>
-
-  <!-- ══════════ TAB: DAILY PLAN ══════════ -->
-  <div id="tab-daily" class="tab-panel">
-    <div class="card accent-teal">
-      <h2>Daily Planning</h2>
-      <textarea id="dailyPlan" style="min-height:220px;" placeholder="Today's tasks, visits, counseling, study schedule, prep checklist…" oninput="scheduleSave()"></textarea>
+  <div class="progress-wrap">
+    <div class="progress-labels">
+      <span>Overall Progress</span>
+      <span id="progress-text">0 / 0</span>
     </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="progress-fill"></div>
+    </div>
+    <div class="section-progress-row" id="section-pips"></div>
   </div>
-
-  <!-- ══════════ TAB: TIPS ══════════ -->
-  <div id="tab-tips" class="tab-panel">
-    <div class="card accent-teal">
-      <h2>Public Speaking Tips (Andy Stanley)</h2>
-
-      <details>
-        <summary>ME – WE – GOD – YOU – WE Framework</summary>
-        <ul>
-          <li><b>ME:</b> Open with your own story. Create tension the audience can feel.</li>
-          <li><b>WE:</b> Widen the lens — this is everyone's story too.</li>
-          <li><b>GOD:</b> Bring in Scripture. What does God say about this tension?</li>
-          <li><b>YOU:</b> Give one specific, actionable next step.</li>
-          <li><b>WE:</b> Close with collective vision — what changes if we all do this?</li>
-        </ul>
-      </details>
-
-      <details>
-        <summary>One Bottom Line</summary>
-        <ul>
-          <li>Every great sermon can be distilled into one memorable sentence.</li>
-          <li>Write your Bottom Line first — let it govern every other decision.</li>
-          <li>If you can't say it in a sentence, you don't know what you're preaching yet.</li>
-        </ul>
-      </details>
-
-      <details>
-        <summary>Create and Hold Tension</summary>
-        <ul>
-          <li>Introduce a compelling question or dilemma early.</li>
-          <li>Resist resolving the tension too quickly — let it breathe.</li>
-          <li>Resolution is the reward for patient listeners.</li>
-        </ul>
-      </details>
-
-      <details>
-        <summary>Engage Emotion + Intellect</summary>
-        <ul>
-          <li>Stories, humor, and vivid language reach the heart.</li>
-          <li>Scripture, logic, and evidence satisfy the mind.</li>
-          <li>The best sermons do both at once.</li>
-        </ul>
-      </details>
-
-      <details>
-        <summary>Practical Delivery Tips</summary>
-        <ul>
-          <li>Slow down when making your most important points.</li>
-          <li>Pause after the Bottom Line — let it land.</li>
-          <li>Make eye contact with individuals, not the crowd.</li>
-          <li>Move with purpose; stillness signals gravity.</li>
-          <li>End before they want you to.</li>
-        </ul>
-      </details>
-    </div>
-  </div>
-
-  <!-- ══════════ TAB: EXPORT ══════════ -->
-  <div id="tab-export" class="tab-panel">
-    <div class="card accent-navy">
-      <h2>Export Options</h2>
-      <button class="btn btn-primary" onclick="exportText()">⬇ Export as .txt</button>
-      <button class="btn btn-orange" onclick="exportOutline()">🖨 Print-Friendly Outline</button>
-      <p class="help-note">All content auto-saves to your browser every second. No data leaves your device.</p>
-    </div>
-
-    <div class="card accent-teal" style="text-align:center;">
-      <h2>Danger Zone</h2>
-      <button class="btn btn-secondary" onclick="clearAll()">🗑 Clear All Data</button>
-      <p class="help-note">This will permanently erase all saved content. Cannot be undone.</p>
-    </div>
-  </div>
-
-</div><!-- /container -->
-
-<footer>
-  "Preach the word; be ready in season and out of season." — 2 Timothy 4:2
-</footer>
-
-<script>
-// ── Tab Navigation ──────────────────────────────────────────────
-function showTab(id) {
-  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
-  document.getElementById('tab-' + id).classList.add('active');
-  const btns = document.querySelectorAll('nav button');
-  const map = ['sermon','outline','ideas','daily','tips','export'];
-  const idx = map.indexOf(id);
-  if (idx >= 0) btns[idx].classList.add('active');
-}
-
-// ── Save / Load ─────────────────────────────────────────────────
-let saveTimer = null;
-
-function scheduleSave() {
-  clearTimeout(saveTimer);
-  saveTimer = setTimeout(save, 900);
-}
-
-function getVerses() {
-  return [...document.querySelectorAll('.verse-input')].map(v => v.value.trim()).filter(v => v);
-}
-
-function buildData() {
-  return {
-    bottomLine:  document.getElementById('bottomLine').value,
-    sermonNotes: document.getElementById('sermonNotes').value,
-    meSection:   document.getElementById('meSection').value,
-    weSection:   document.getElementById('weSection').value,
-    godSection:  document.getElementById('godSection').value,
-    youSection:  document.getElementById('youSection').value,
-    we2Section:  document.getElementById('we2Section').value,
-    illustrations: document.getElementById('illustrations').value,
-    dailyPlan:   document.getElementById('dailyPlan').value,
-    verses:      getVerses()
-  };
-}
-
-function save() {
-  try {
-    localStorage.setItem('sermonPlannerData', JSON.stringify(buildData()));
-    saveIdeas();
-    flashSaved();
-  } catch(e) {
-    console.warn('Save failed:', e);
-  }
-}
-
-function saveIdeas() {
-  try {
-    localStorage.setItem('sermonIdeasData', document.getElementById('sermonIdeas').value);
-  } catch(e) {}
-}
-
-function flashSaved() {
-  const el = document.getElementById('saveIndicator');
-  el.classList.add('show');
-  clearTimeout(el._hideTimer);
-  el._hideTimer = setTimeout(() => el.classList.remove('show'), 1600);
-}
-
-function load() {
-  let data;
-  try { data = JSON.parse(localStorage.getItem('sermonPlannerData')); } catch(e) {}
-  if (data) {
-    const set = (id, val) => { const el = document.getElementById(id); if(el) el.value = val || ''; };
-    set('bottomLine',   data.bottomLine);
-    set('sermonNotes',  data.sermonNotes);
-    set('meSection',    data.meSection);
-    set('weSection',    data.weSection);
-    set('godSection',   data.godSection);
-    set('youSection',   data.youSection);
-    set('we2Section',   data.we2Section);
-    set('illustrations',data.illustrations);
-    set('dailyPlan',    data.dailyPlan);
-    const vc = document.getElementById('versesContainer');
-    vc.innerHTML = '';
-    if (Array.isArray(data.verses) && data.verses.length) {
-      data.verses.forEach(v => addVerse(v));
-    }
-  }
-  // Ideas always load from their own key — never cleared with the rest
-  try {
-    const ideas = localStorage.getItem('sermonIdeasData');
-    if (ideas !== null) document.getElementById('sermonIdeas').value = ideas;
-  } catch(e) {}
-}
-
-// Auto-save every 1 second as a safety net
-setInterval(save, 1000);
-
-// ── Verses ──────────────────────────────────────────────────────
-function addVerse(val) {
-  val = (typeof val === 'string') ? val : '';
-  const row = document.createElement('div');
-  row.className = 'verse-row';
-  const inp = document.createElement('input');
-  inp.type = 'text';
-  inp.className = 'verse-input';
-  inp.value = val;
-  inp.placeholder = 'e.g., Romans 8:28';
-  inp.addEventListener('input', scheduleSave);
-  const btn = document.createElement('button');
-  btn.className = 'verse-remove';
-  btn.title = 'Remove verse';
-  btn.textContent = '×';
-  btn.addEventListener('click', () => { row.remove(); scheduleSave(); });
-  row.appendChild(inp);
-  row.appendChild(btn);
-  document.getElementById('versesContainer').appendChild(row);
-}
-
-// ── Clear All ───────────────────────────────────────────────────
-function clearAll() {
-  if (!confirm('Clear all saved data? This cannot be undone.')) return;
-  localStorage.removeItem('sermonPlannerData');
-  ['bottomLine','sermonNotes','meSection','weSection','godSection','youSection','we2Section','illustrations','dailyPlan']
-    .forEach(id => document.getElementById(id).value = '');
-  document.getElementById('versesContainer').innerHTML = '';
-}
-
-// ── Export: Text ─────────────────────────────────────────────────
-function exportText() {
-  const d = buildData();
-  save(); // ensure latest
-  const verses = d.verses.length ? d.verses.map(v => '  • ' + v).join('\n') : '  (none)';
-  const line = '─'.repeat(52);
-  const text = [
-    'SERMON PREPARATION NOTES',
-    line,
-    '',
-    'BOTTOM LINE:',
-    d.bottomLine || '(not set)',
-    '',
-    line,
-    'ME – WE – GOD – YOU – WE',
-    line,
-    '',
-    'ME  (Personal connection):',
-    d.meSection || '(empty)',
-    '',
-    'WE  (Shared tension):',
-    d.weSection || '(empty)',
-    '',
-    'GOD  (Scripture & teaching):',
-    d.godSection || '(empty)',
-    '',
-    'YOU  (Call to action):',
-    d.youSection || '(empty)',
-    '',
-    'WE  (Closing vision):',
-    d.we2Section || '(empty)',
-    '',
-    line,
-    'REFERENCE VERSES:',
-    verses,
-    '',
-    line,
-    'ILLUSTRATIONS:',
-    d.illustrations || '(empty)',
-    '',
-    line,
-    'SERMON NOTES:',
-    d.sermonNotes || '(empty)',
-    '',
-    line,
-    'DAILY PLANNING:',
-    d.dailyPlan || '(empty)',
-    '',
-  ].join('\n');
-
-  const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'sermon_planner_' + datestamp() + '.txt';
-  document.body.appendChild(a);
-  a.click();
-  setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 500);
-}
-
-// ── Export: Print Outline ────────────────────────────────────────
-function exportOutline() {
-  const d = buildData();
-  save();
-  const versesHtml = d.verses.length
-    ? d.verses.map(v => '<li>' + esc(v) + '</li>').join('')
-    : '<li style="color:#888">No verses added</li>';
-
-  const html = `<!DOCTYPE html><html lang="en"><head>
-<meta charset="UTF-8">
-<title>Sermon Outline</title>
-<style>
-  body { font-family: 'Georgia', serif; padding: 50px 60px; max-width: 720px; margin: auto; color: #1a1a1a; background: #fff; }
-  h1 { text-align:center; color: #1B2D45; font-size: 1.6em; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 4px; }
-  .subtitle { text-align:center; color:#888; font-style:italic; font-size:0.9em; margin-bottom:36px; }
-  .bottom-line-box {
-    border: 2px solid #E8763A;
-    border-radius: 10px;
-    padding: 18px 22px;
-    margin-bottom: 32px;
-    background: #fff8f5;
-  }
-  .bottom-line-box .label { font-size:0.72em; text-transform:uppercase; letter-spacing:2px; color:#E8763A; font-family:system-ui,sans-serif; font-weight:700; margin-bottom:6px; }
-  .bottom-line-box .text { font-size:1.2em; color:#1B2D45; font-style:italic; font-weight:600; line-height:1.4; }
-  .section { margin-bottom: 26px; }
-  .section-head {
-    display: flex; align-items: center; gap: 12px; margin-bottom: 10px;
-  }
-  .badge {
-    display:inline-block; padding: 4px 14px; border-radius: 20px;
-    font-size: 0.75em; font-weight: 700; letter-spacing: 1px;
-    font-family: system-ui, sans-serif; color: white;
-  }
-  .badge-me  { background:#E8763A; }
-  .badge-we  { background:#1B2D45; }
-  .badge-god { background:#2C8C7C; }
-  .badge-you { background:#F0B429; color:#1a1a1a; }
-  .badge-we2 { background:#1B2D45; }
-  .section-desc { font-size:0.78em; color:#999; font-style:italic; font-family:system-ui,sans-serif; }
-  .section-body {
-    background: #F7F3EE; border-radius: 8px; padding: 14px 18px;
-    font-size: 0.98em; line-height: 1.7; white-space: pre-wrap;
-    color: #222;
-  }
-  .section-body.empty { color:#bbb; font-style:italic; }
-  h2 { font-size:0.85em; text-transform:uppercase; letter-spacing:2px; color:#2C8C7C; margin: 28px 0 10px; font-family:system-ui,sans-serif; border-bottom:1px solid #e0e0e0; padding-bottom:6px; }
-  ul { margin: 0; padding-left: 20px; line-height:1.8; }
-  .body-text { background:#F7F3EE; border-radius:8px; padding:14px 18px; white-space:pre-wrap; font-size:0.98em; line-height:1.7; }
-  .body-text.empty { color:#bbb; font-style:italic; }
-  footer { margin-top:50px; text-align:center; color:#bbb; font-size:0.8em; font-style:italic; border-top:1px solid #eee; padding-top:16px; }
-  @media print { body { padding: 20px 30px; } }
-</style>
-</head><body>
-<h1>Sermon Outline</h1>
-<p class="subtitle">Prepared with Sermon &amp; Day Planner</p>
-
-<div class="bottom-line-box">
-  <div class="label">Bottom Line</div>
-  <div class="text">${esc(d.bottomLine) || '<span style="color:#ccc;font-style:italic;">Not set</span>'}</div>
 </div>
 
-${mwgywSection('ME', 'badge-me', 'Personal connection', d.meSection)}
-${mwgywSection('WE', 'badge-we', 'Shared tension', d.weSection)}
-${mwgywSection('GOD', 'badge-god', 'Scripture &amp; teaching', d.godSection)}
-${mwgywSection('YOU', 'badge-you', 'Call to action', d.youSection)}
-${mwgywSection('WE', 'badge-we2', 'Closing vision', d.we2Section)}
+<!-- DRAWER OVERLAY -->
+<div class="drawer-overlay" id="drawer-overlay" onclick="toggleDrawer()"></div>
 
-<h2>Reference Verses</h2>
-<ul>${versesHtml}</ul>
-
-<h2>Illustrations</h2>
-<div class="body-text${!d.illustrations ? ' empty' : ''}">${esc(d.illustrations) || 'None added'}</div>
-
-<footer>"Preach the word; be ready in season and out of season." — 2 Timothy 4:2</footer>
-</body></html>`;
-
-  function mwgywSection(label, badgeClass, desc, content) {
-    const empty = !content || !content.trim();
-    return `<div class="section">
-  <div class="section-head">
-    <span class="badge ${badgeClass}">${label}</span>
-    <span class="section-desc">${desc}</span>
+<!-- DRAWER -->
+<div class="drawer" id="drawer">
+  <div class="drawer-header">
+    <h3>Jump to Section</h3>
   </div>
-  <div class="section-body${empty ? ' empty' : ''}">${empty ? '(not filled in)' : esc(content)}</div>
-</div>`;
+  <div id="drawer-nav"></div>
+  <div class="drawer-reset" onclick="resetAll()">Reset All Progress</div>
+</div>
+
+<!-- MAIN -->
+<main class="main" id="main-content"></main>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+const STORAGE_KEY = 'acx_pt_v1';
+
+const SECTIONS = [
+  {
+    id: 's0',
+    icon: '✂️',
+    name: 'Pro Tools Editing Chain',
+    sub: '7 steps · Clean, committed audio',
+    color: '#00c9a7',
+    items: [
+      {
+        id: 's0_i0',
+        label: 'Strip Silence',
+        hint: 'Remove dead regions between takes',
+        tips: 'Use Strip Silence (Cmd+U) to auto-detect and remove regions below a threshold. Set threshold conservatively — aim to keep breath tails and ambient tones.',
+        settings: [
+          { label: 'Strip Threshold', value: '−40 to −50 dBFS' },
+          { label: 'Min Strip Duration', value: '500 ms' },
+          { label: 'Pre/Post Pad', value: '50–100 ms' },
+          { label: 'Region Start Pad', value: '10 ms' },
+        ],
+        tips2: 'Always preview before applying. Overly aggressive stripping will kill natural room sound between sentences.'
+      },
+      {
+        id: 's0_i1',
+        label: 'Replace Silence With Room Tone',
+        hint: 'Fill gaps for seamless, natural flow',
+        tips: 'Record 60 seconds of isolated room tone at session start. Loop a clean section and paste it under all stripped gaps using AudioSuite or manual placement.',
+        settings: [
+          { label: 'Room Tone Source', value: 'Dedicated RT clip, 60+ sec' },
+          { label: 'Room Tone Level', value: 'Match natural floor, −55 to −65 dBFS' },
+          { label: 'Crossfade In/Out', value: '3–5 ms' },
+          { label: 'Placement', value: 'Below narration on dedicated track' },
+        ],
+        tips2: 'Keep room tone level identical to your noise floor. Inconsistent RT level will be immediately audible.'
+      },
+      {
+        id: 's0_i2',
+        label: 'Remove Clicks / Pops / Plosives',
+        hint: 'Surgical repair of transient artifacts',
+        tips: 'Use the Pencil tool for micro-edits on individual samples. Use AudioSuite Noise Reduction (gentle) or iZotope RX for click removal when pencil-drawing is impractical.',
+        settings: [
+          { label: 'Pencil Tool Mode', value: 'Parabolic or Line for short clips' },
+          { label: 'Zoom Level', value: 'Sample-level (Cmd+[ to zoom)' },
+          { label: 'RX Click Repair', value: 'Sensitivity 40–60, Frequency Skew: Low' },
+          { label: 'Plosive Region', value: 'Clip-gain dip −3 to −6 dB on P/B transient' },
+        ],
+        tips2: 'For plosives, try a fast Clip Gain dip before reaching for plugins — it\'s faster and non-destructive.'
+      },
+      {
+        id: 's0_i3',
+        label: 'Breath Control Editing',
+        hint: 'Tame disruptive breaths, preserve natural ones',
+        tips: 'Never remove all breaths — ACX and listeners need them. Reduce volume of disruptive breaths by 6–12 dB using clip gain. Only remove breaths that interrupt meaning.',
+        settings: [
+          { label: 'Mild Breath Reduction', value: 'Clip Gain −6 dB' },
+          { label: 'Heavy Breath Reduction', value: 'Clip Gain −12 dB' },
+          { label: 'Full Remove', value: 'Only if mid-sentence interrupt' },
+          { label: 'Before Chapter Break', value: 'Keep final breath at natural level' },
+        ],
+        tips2: 'Use the Trim tool in Waveform view for fast clip gain on breath regions. Work from a duplicate track initially to compare.'
+      },
+      {
+        id: 's0_i4',
+        label: 'Clip Gain Leveling',
+        hint: 'Macro level pass before any processing',
+        tips: 'Before applying plugins, manually set clip gain so all regions are within a 3–6 dB window. This gives compression and EQ a consistent signal to work with.',
+        settings: [
+          { label: 'Target Pre-Gain Level', value: '−18 to −12 dBFS average' },
+          { label: 'Clip Gain Range', value: 'Adjust ±6 dB per region max' },
+          { label: 'Tool', value: 'Smart Tool / Trim Tool in Waveform' },
+          { label: 'Reference', value: 'Use Clip Gain display (Ctrl+Shift+G)' },
+        ],
+        tips2: 'Clip Gain is pre-fader and pre-plugin. Getting this right reduces the work your compressor has to do by 50%.'
+      },
+      {
+        id: 's0_i5',
+        label: 'Crossfades (3–5 ms)',
+        hint: 'Smooth every edit point to prevent clicks',
+        tips: 'Select all edited region boundaries and apply a quick crossfade. In Pro Tools use Cmd+F (Equal Power is standard for voice). Never leave raw edit points.',
+        settings: [
+          { label: 'Crossfade Duration', value: '3–5 ms (voice standard)' },
+          { label: 'Crossfade Shape', value: 'Equal Power for natural voice' },
+          { label: 'Batch Apply', value: 'Select All → Cmd+F' },
+          { label: 'On Room Tone Fills', value: 'S-curve fades, 5–10 ms' },
+        ],
+        tips2: 'Enable "Preserve Fades" in your clip preferences. After batch crossfading, listen through at 1.5x to catch remaining clicks.'
+      },
+      {
+        id: 's0_i6',
+        label: 'Session Cleanup + Track Commit',
+        hint: 'Consolidate and prepare for mixing',
+        tips: 'Commit (Consolidate) your edited voice track to a single new audio file. This bakes in clip gain, removes all region boundaries, and gives the mix stage a clean, single clip to work with.',
+        settings: [
+          { label: 'Consolidate', value: 'Opt+Shift+3 / Track → Consolidate Clip' },
+          { label: 'Output Format', value: 'WAV, 24-bit, session sample rate' },
+          { label: 'Naming', value: 'ChXX_Voice_EDIT_v1.wav' },
+          { label: 'Backup', value: 'Save full session with "Save Copy In" before committing' },
+        ],
+        tips2: 'Keep your original edited session (pre-commit) intact as a backup. The committed clip is your new source of truth for mixing.'
+      }
+    ]
+  },
+  {
+    id: 's1',
+    icon: '🎛️',
+    name: 'Pro Tools Mixing Chain',
+    sub: '4 processors · Shape and control dynamics',
+    color: '#7b61ff',
+    items: [
+      {
+        id: 's1_i0',
+        label: 'EQ Cleanup',
+        hint: 'High-pass, mud removal, harshness control',
+        tips: 'Use a parametric EQ as your first insert. Apply a high-pass to remove low-end rumble, a gentle cut in the mud zone, and a surgical dip for harshness if needed. Use spectrum analyzer to confirm cuts before and after.',
+        settings: [
+          { label: 'High-Pass Filter', value: '80 Hz, 18–24 dB/oct slope' },
+          { label: 'Mud Reduction', value: '120–250 Hz, −2 to −4 dB, wide Q' },
+          { label: 'Harshness Cut', value: '2–5 kHz, −1 to −3 dB, moderate Q' },
+          { label: 'Presence Shelf', value: '+1–2 dB @ 8 kHz (optional, voice-by-voice)' },
+        ],
+        tips2: 'Bypass the EQ repeatedly to A/B check. Every cut should be audible and meaningful. Don\'t EQ by the numbers alone.'
+      },
+      {
+        id: 's1_i1',
+        label: 'De-Esser',
+        hint: 'Tame sibilance at 4–7 kHz',
+        tips: 'Place de-esser after EQ but before the main compressor. Target sibilant S/SH/CH frequencies for the voice. Avoid over-processing — de-essing should be transparent on single words.',
+        settings: [
+          { label: 'Target Frequency', value: '4–7 kHz (voice-dependent)' },
+          { label: 'Threshold', value: 'Set so only sibilants trigger' },
+          { label: 'Reduction', value: '3–6 dB max per trigger' },
+          { label: 'Style', value: 'Broadband or wideband split mode' },
+        ],
+        tips2: 'Recommended: Waves DeEsser, FabFilter Pro-DS, or built-in AIR Dynamic plugin. De-ess lightly — ACX masters will expose over-processing as a lisp artifact.'
+      },
+      {
+        id: 's1_i2',
+        label: 'Compression',
+        hint: 'Transparent VO dynamics control',
+        tips: 'Use a single transparent compressor for voice-over work. The goal is evening dynamics, not squashing energy. Slow attack preserves consonants; medium release avoids pumping.',
+        settings: [
+          { label: 'Ratio', value: '2:1 to 3:1' },
+          { label: 'Threshold', value: 'Set for 4–6 dB GR on louder peaks' },
+          { label: 'Attack', value: '10–30 ms (slow — preserve consonants)' },
+          { label: 'Release', value: '60–150 ms (program-dependent)' },
+          { label: 'Makeup Gain', value: 'Match bypass level exactly' },
+          { label: 'Knee', value: 'Soft (3–6 dB soft knee)' },
+        ],
+        tips2: 'Recommended: Pro Tools\'s stock D3 Compressor, API 2500 plugin, or SSL G-Bus for smooth response. Hard knee ratios above 4:1 are not appropriate for narration.'
+      },
+      {
+        id: 's1_i3',
+        label: 'Limiter (Pre-Master)',
+        hint: 'Protect ceiling before mastering stage',
+        tips: 'Add a transparent brickwall limiter as your last mix insert. Set ceiling at −3.1 dBFS to leave mastering headroom. This is a safety limiter only — it should rarely trigger during normal narration.',
+        settings: [
+          { label: 'Ceiling / Output', value: '−3.1 dBFS (hard ceiling)' },
+          { label: 'Lookahead', value: '1–2 ms' },
+          { label: 'Release', value: 'Auto or 50–100 ms' },
+          { label: 'GR Triggered', value: 'Should be ≤ 1–2 dB on true peaks' },
+        ],
+        tips2: 'Recommended: Waves L1/L2, FabFilter Pro-L2 (Transparent mode), or AIR Maximizer. If your limiter is working hard at this stage, go back and fix dynamics with the compressor.'
+      }
+    ]
+  },
+  {
+    id: 's2',
+    icon: '📊',
+    name: 'Pro Tools Mastering Chain (ACX)',
+    sub: '6 spec targets · Must pass ACX QC',
+    color: '#ff6b6b',
+    items: [
+      {
+        id: 's2_i0',
+        label: 'Normalize to −3 dB Peak',
+        hint: 'Final peak normalization after all processing',
+        tips: 'After all mixing plugins are applied and your bounce is rendered, normalize the final WAV so the loudest peak is at −3 dBFS. Do this as the last step before loudness check.',
+        settings: [
+          { label: 'Peak Target', value: '−3.0 dBFS' },
+          { label: 'Method', value: 'Peak Normalization (not RMS)' },
+          { label: 'Tool', value: 'AudioSuite → Normalize or DAW normalize on bounce' },
+          { label: 'Check After', value: 'Verify with Youlean / WLM+ / R128 meter' },
+        ],
+        tips2: 'Never use clip normalization as your primary loudness control. Normalize only to set the peak ceiling — RMS must be confirmed separately afterward.'
+      },
+      {
+        id: 's2_i1',
+        label: 'RMS Loudness −23 to −18 dB',
+        hint: 'ACX spec: RMS must land in this window',
+        tips: 'After peak normalization, check RMS with a dedicated meter. If RMS is too low (too quiet), reduce silence sections or revisit clip gain. If too high, reduce compression makeup gain and re-normalize.',
+        settings: [
+          { label: 'ACX RMS Target', value: '−23 to −18 dBFS RMS' },
+          { label: 'Measurement Window', value: 'Full chapter, not selection' },
+          { label: 'Meter Plugin', value: 'Youlean Loudness Meter, WLM+, or Nugen' },
+          { label: 'Common Miss', value: 'Too much silence drags RMS below −23' },
+        ],
+        tips2: 'RMS is the most commonly failed ACX spec. Chapters with long pauses or room tone gaps will pull the RMS number down. Ensure room tone fills are present and consistent.'
+      },
+      {
+        id: 's2_i2',
+        label: 'Final Limiter Ceiling −3.1 dB',
+        hint: 'Confirm no true peaks exceed ceiling',
+        tips: 'After the full render, verify in a true-peak meter (not just DAW meters) that no sample exceeds −3.1 dBFS. DAW meters are often sample-peak only and will miss inter-sample peaks.',
+        settings: [
+          { label: 'True Peak Ceiling', value: '−3.1 dBFS TP max' },
+          { label: 'ACX Limit', value: '−3.0 dBFS TP (use −3.1 as safety margin)' },
+          { label: 'Meter', value: 'True-Peak enabled: WLM+, Youlean, NUGEN' },
+          { label: 'DAW Meter Warning', value: 'Pro Tools meters are sample-peak only — do not trust alone' },
+        ],
+        tips2: 'Export at 24-bit and check the final MP3 bounce separately. Lossy encoding can introduce inter-sample peaks up to 1 dB above the original WAV.'
+      },
+      {
+        id: 's2_i3',
+        label: 'Noise Floor ≤ −60 dB',
+        hint: 'Room noise must be inaudible and below spec',
+        tips: 'Measure noise floor in a region of complete silence (no narration, no breath). Your noise floor must measure at or below −60 dBFS. This is the most frequent ACX rejection reason.',
+        settings: [
+          { label: 'ACX Noise Floor Spec', value: '≤ −60 dBFS RMS' },
+          { label: 'Measurement Zone', value: 'First 0.5 sec silence or dedicated RT section' },
+          { label: 'Common Causes', value: 'HVAC, USB noise, guitar amp interference, PC fans' },
+          { label: 'Remediation', value: 'iZotope RX Noise Reduction → 6–9 dB reduction, Broadband' },
+        ],
+        tips2: 'Treat your room acoustically before recording. Noise reduction plugins help but degrade timbre at aggressive settings. Fix noise at source whenever possible.'
+      },
+      {
+        id: 's2_i4',
+        label: 'No Clipping Across Session',
+        hint: 'Red clip indicators must be zero across all tracks',
+        tips: 'Play the full chapter with all plugins active. Every meter in your Pro Tools session must show zero clipping. Check the master fader, aux busses, and the bounce output path.',
+        settings: [
+          { label: 'Check', value: 'All clip indicators on I/O, tracks, master' },
+          { label: 'Pro Tools Clip Light', value: 'Red indicator — click to reset, re-check' },
+          { label: 'Bounce Path', value: 'Check hardware output and bounce destination' },
+          { label: 'Plugin Clipping', value: 'Check plugin internal clip lights (esp. limiters)' },
+        ],
+        tips2: 'Use Pro Tools\' "Bounce Clip Indicator" on the master fader after bouncing. Any red light means clipping occurred in the render — do not submit that file.'
+      },
+      {
+        id: 's2_i5',
+        label: 'Consistent Tonal Balance Across Chapters',
+        hint: 'All chapters must sound matched before export',
+        tips: 'Reference Chapter 1 as your master tone template. Use a spectrum analyzer (iZotope Insight, SPAN) to compare subsequent chapters. EQ adjustments between chapters should be minor — large swings indicate a recording inconsistency to address at source.',
+        settings: [
+          { label: 'Reference Tool', value: 'SPAN, Insight 2, or Voxengo Correlometer' },
+          { label: 'Tolerance', value: 'Within ±2 dB across tonal regions chapter-to-chapter' },
+          { label: 'Critical Bands', value: '200 Hz, 1 kHz, 5 kHz, 10 kHz' },
+          { label: 'Session Recall', value: 'Save Plugin Preset: "ACX Voice Master Ch1" and load per chapter' },
+        ],
+        tips2: 'Listeners on ACX binge audiobooks in sequence. Any tonal inconsistency between chapters is jarring and draws negative reviews. Consistency is a professionalism marker.'
+      }
+    ]
+  },
+  {
+    id: 's3',
+    icon: '📤',
+    name: 'ACX Export Pipeline',
+    sub: '6 steps · Final delivery checklist',
+    color: '#ffd166',
+    items: [
+      {
+        id: 's3_i0',
+        label: 'Commit Final Mix',
+        hint: 'Freeze all tracks and consolidate to stereo print',
+        tips: 'Before bouncing, freeze all active tracks (Ctrl+click track), then use Commit (Opt+Shift+3) to render your final mix to a single stereo interleaved file. This eliminates plugin load issues in the bounce engine.',
+        settings: [
+          { label: 'Commit Command', value: 'Opt+Shift+3 (Mac)' },
+          { label: 'Include', value: 'All active tracks with inserts and sends' },
+          { label: 'Destination', value: 'New dedicated "PRINT" track' },
+          { label: 'Bit Depth', value: '24-bit / session sample rate' },
+        ],
+        tips2: 'Commit, then solo the PRINT track and compare with original mix using A/B bypass. They must be identical. Any difference means a plugin is processing post-commit incorrectly.'
+      },
+      {
+        id: 's3_i1',
+        label: 'Bounce to WAV 44.1 kHz / 24-bit',
+        hint: 'ACX master archive format',
+        tips: 'Use Bounce to Disk (Cmd+Alt+B). Set format to WAV (Broadcast Wave or standard), 44.1 kHz, 24-bit, Stereo Interleaved. Offline Bounce is fine for final render — enable "Import After Bounce" for instant review.',
+        settings: [
+          { label: 'Bounce Command', value: 'Cmd+Opt+B' },
+          { label: 'File Type', value: 'WAV (BWF or standard)' },
+          { label: 'Sample Rate', value: '44.1 kHz' },
+          { label: 'Bit Depth', value: '24-bit' },
+          { label: 'Format', value: 'Stereo Interleaved' },
+          { label: 'Speed', value: 'Offline (faster, identical quality)' },
+        ],
+        tips2: 'Keep this 24-bit WAV as your archival master. Never delete it. All future format conversions should originate from this file, not from an MP3.'
+      },
+      {
+        id: 's3_i2',
+        label: 'Convert to 192 kbps CBR MP3',
+        hint: 'ACX required delivery format',
+        tips: 'Convert your 24-bit WAV to MP3 at exactly 192 kbps, Constant Bit Rate (CBR), using a trusted encoder. Use iTunes/Music app, Audacity, or LAME encoder. Variable Bit Rate (VBR) is not accepted by ACX.',
+        settings: [
+          { label: 'Bit Rate', value: '192 kbps (exact)' },
+          { label: 'Mode', value: 'CBR — Constant Bit Rate (NOT VBR)' },
+          { label: 'Channels', value: 'Stereo or Joint Stereo' },
+          { label: 'Sample Rate', value: '44.1 kHz (maintain from WAV source)' },
+          { label: 'Encoder', value: 'LAME, Apple Music, Audacity Export' },
+        ],
+        tips2: 'After encoding, check the MP3 true-peak again — lossy encoding can add up to +1 dBTP above the WAV. If peaks are pushed above −3 dBFS, reduce your WAV output ceiling by −1 dB and re-encode.'
+      },
+      {
+        id: 's3_i3',
+        label: 'Verify Chapter Naming Format',
+        hint: 'ACX file naming conventions are required',
+        tips: 'ACX requires specific file naming. Chapters must be labeled consistently and sequentially. Opening and closing credits are separate files. Use underscores, not spaces, in filenames.',
+        settings: [
+          { label: 'Chapter Format', value: 'BookTitle_Ch01.mp3, Ch02.mp3...' },
+          { label: 'Opening Credits', value: 'BookTitle_OpeningCredits.mp3' },
+          { label: 'Closing Credits', value: 'BookTitle_ClosingCredits.mp3' },
+          { label: 'Naming Rule', value: 'No spaces, no special characters, leading zeros on chapters' },
+        ],
+        tips2: 'Confirm naming against your ACX KDP/Author Central project settings before upload. Mismatched chapter titles will delay QC review.'
+      },
+      {
+        id: 's3_i4',
+        label: 'Import into ACX Dashboard',
+        hint: 'Upload and associate files to your title',
+        tips: 'Log into ACX Publisher Portal. Navigate to your title and select Upload. Upload each MP3 file in order. Confirm chapter associations and metadata match your manuscript chapter list exactly.',
+        settings: [
+          { label: 'Portal', value: 'publisher.acx.com' },
+          { label: 'Upload Order', value: 'Opening Credits → Ch01 → Ch02 → … → Closing Credits' },
+          { label: 'Metadata Match', value: 'Chapter title in portal must match narrated chapter heading' },
+          { label: 'File Size Check', value: 'Verify file sizes are reasonable before upload (not 0 KB)' },
+        ],
+        tips2: 'Upload in a stable network environment. ACX uploads can time out on slow connections. Use a wired connection if possible.'
+      },
+      {
+        id: 's3_i5',
+        label: 'Check Waveform Previews',
+        hint: 'Confirm ACX shows healthy waveforms after upload',
+        tips: 'After each file uploads, ACX generates a waveform preview. Healthy files show visible, consistent waveforms. Flat lines indicate silence or failed upload. Extremely thin lines indicate levels too low (RMS issue).',
+        settings: [
+          { label: 'Healthy Preview', value: 'Consistent waveform height, no flat sections' },
+          { label: 'Flat Line', value: 'Re-upload — file may be corrupt or silent' },
+          { label: 'Thin Waveform', value: 'RMS too low — go back to mastering' },
+          { label: 'Clipped Look', value: 'Waveform squared off at top — peaks too high' },
+        ],
+        tips2: 'Review all waveform previews before submitting for QC. ACX QC takes 7–14 business days. A rejection after that wait means starting the clock over — verify everything before submitting.'
+      }
+    ]
   }
+];
 
-  const win = window.open('', '_blank');
-  if (!win) { alert('Pop-up blocked. Please allow pop-ups for this page.'); return; }
-  win.document.write(html);
-  win.document.close();
-  win.focus();
-  setTimeout(() => win.print(), 600);
+// ── STATE ──
+let state = loadState();
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch(e) {}
+  return { checks: {}, expanded: {}, notes: {}, sections: {} };
 }
 
-// ── Helpers ──────────────────────────────────────────────────────
-function esc(str) {
-  if (!str) return '';
-  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-function datestamp() {
-  const d = new Date();
-  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+function saveState() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
 }
 
-// ── Init ─────────────────────────────────────────────────────────
-load();
+// ── BUILD UI ──
+function buildUI() {
+  buildDrawerNav();
+  buildSectionPips();
+  buildSections();
+  updateProgress();
+}
+
+function buildDrawerNav() {
+  const nav = document.getElementById('drawer-nav');
+  nav.innerHTML = '';
+  SECTIONS.forEach((sec, si) => {
+    const div = document.createElement('div');
+    div.className = 'drawer-item';
+    div.innerHTML = `
+      <div class="drawer-dot" style="background:${sec.color}"></div>
+      <span class="drawer-item-label">${sec.name}</span>
+      <span class="drawer-item-count" id="dnav-count-${si}"></span>
+    `;
+    div.onclick = () => {
+      const el = document.getElementById(sec.id);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      toggleDrawer(false);
+    };
+    nav.appendChild(div);
+  });
+}
+
+function buildSectionPips() {
+  const row = document.getElementById('section-pips');
+  row.innerHTML = '';
+  SECTIONS.forEach((sec, si) => {
+    const pip = document.createElement('div');
+    pip.className = 'section-pip';
+    pip.dataset.section = si;
+    pip.innerHTML = `<div class="section-pip-fill" id="pip-fill-${si}"></div>`;
+    pip.onclick = () => {
+      const el = document.getElementById(sec.id);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+    row.appendChild(pip);
+  });
+}
+
+function buildSections() {
+  const main = document.getElementById('main-content');
+  main.innerHTML = '';
+
+  // Complete banner
+  const banner = document.createElement('div');
+  banner.className = 'complete-banner';
+  banner.id = 'complete-banner';
+  banner.innerHTML = `<h2>✅ Session Ready</h2><p>All ACX Pro Tools checks complete. You're cleared for upload.</p>`;
+  main.appendChild(banner);
+
+  SECTIONS.forEach((sec, si) => {
+    const isExpanded = state.sections[sec.id] !== false; // default open
+    const card = document.createElement('div');
+    card.className = `section-card jump-scroll${isExpanded ? ' expanded' : ''}`;
+    card.id = sec.id;
+
+    card.innerHTML = `
+      <div class="section-header" onclick="toggleSection('${sec.id}')">
+        <div class="section-icon section-icon-${si}">${sec.icon}</div>
+        <div class="section-meta">
+          <div class="section-name">${sec.name}</div>
+          <div class="section-sub">${sec.sub}</div>
+        </div>
+        <div class="section-badge badge-${si}" id="badge-${si}">0/${sec.items.length}</div>
+        <div class="section-chevron">▼</div>
+      </div>
+      <div class="section-body${isExpanded ? ' open' : ''}" id="body-${sec.id}">
+        <div class="section-divider"></div>
+        <div id="items-${sec.id}"></div>
+      </div>
+    `;
+    main.appendChild(card);
+
+    buildItems(sec, si);
+  });
+
+  // Summary card
+  const sumCard = document.createElement('div');
+  sumCard.className = 'summary-card';
+  sumCard.id = 'summary-card';
+  sumCard.innerHTML = buildSummaryHTML();
+  main.appendChild(sumCard);
+}
+
+function buildSummaryHTML() {
+  let html = `<div class="summary-title">Section Overview</div>`;
+  SECTIONS.forEach((sec, si) => {
+    const done = sec.items.filter(it => state.checks[it.id]).length;
+    const pct = sec.items.length ? Math.round(done / sec.items.length * 100) : 0;
+    html += `
+      <div class="summary-row">
+        <div class="summary-dot" style="background:${sec.color}"></div>
+        <div class="summary-name">${sec.name}</div>
+        <div class="summary-frac" id="sum-frac-${si}">${done}/${sec.items.length}</div>
+        <div class="summary-mini-bar">
+          <div class="summary-mini-fill" id="sum-fill-${si}" style="background:${sec.color};width:${pct}%"></div>
+        </div>
+      </div>
+    `;
+  });
+  return html;
+}
+
+function buildItems(sec, si) {
+  const container = document.getElementById(`items-${sec.id}`);
+  container.innerHTML = '';
+  sec.items.forEach((item, ii) => {
+    const isChecked = !!state.checks[item.id];
+    const isExpanded = !!state.expanded[item.id];
+    const noteVal = state.notes[item.id] || '';
+
+    const div = document.createElement('div');
+    div.className = `check-item check-sec-${si}${isExpanded ? ' expanded' : ''}`;
+    div.id = `item-${item.id}`;
+
+    const settingsHTML = item.settings ? item.settings.map(s =>
+      `<div class="spec-tag accent${si === 0 ? '' : si === 1 ? '2' : si === 2 ? '3' : '4'}">${s.label}: ${s.value}</div>`
+    ).join('') : '';
+
+    div.innerHTML = `
+      <div class="check-row${isChecked ? ' checked-row' : ''}" id="row-${item.id}" onclick="toggleCheck('${item.id}','${sec.id}',${si})">
+        <div class="check-box${isChecked ? ' checked' : ''}" id="box-${item.id}"></div>
+        <div class="check-label-wrap">
+          <div class="check-label" id="label-${item.id}">${item.label}</div>
+          <div class="check-hint">${item.hint}</div>
+        </div>
+        <div class="check-expand-btn" onclick="event.stopPropagation();toggleItemExpand('${item.id}')" id="expbtn-${item.id}">▼</div>
+      </div>
+      <div class="item-detail${isExpanded ? ' open' : ''}" id="detail-${item.id}">
+        <div class="item-detail-inner">
+          <div class="detail-block">
+            <div class="detail-label">Tips</div>
+            <div class="detail-body">${item.tips}</div>
+          </div>
+          ${item.settings ? `
+          <div class="detail-block">
+            <div class="detail-label">Pro Tools Settings</div>
+            <div class="spec-row">${settingsHTML}</div>
+          </div>` : ''}
+          ${item.tips2 ? `
+          <div class="detail-block">
+            <div class="detail-label">Watch Out</div>
+            <div class="detail-body">${item.tips2}</div>
+          </div>` : ''}
+          <div class="detail-block">
+            <div class="notes-label">Session Notes</div>
+            <textarea class="notes-field" id="notes-${item.id}" placeholder="Your notes..." oninput="saveNote('${item.id}',this.value)">${noteVal}</textarea>
+          </div>
+        </div>
+      </div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+// ── INTERACTIONS ──
+function toggleSection(secId) {
+  const card = document.getElementById(secId);
+  const body = document.getElementById(`body-${secId}`);
+  const isExpanded = card.classList.toggle('expanded');
+  body.classList.toggle('open', isExpanded);
+  state.sections[secId] = isExpanded;
+  saveState();
+}
+
+function toggleItemExpand(itemId) {
+  const item = document.getElementById(`item-${itemId}`);
+  const detail = document.getElementById(`detail-${itemId}`);
+  const isExp = item.classList.toggle('expanded');
+  detail.classList.toggle('open', isExp);
+  state.expanded[itemId] = isExp;
+  saveState();
+}
+
+function toggleCheck(itemId, secId, si) {
+  const isChecked = !state.checks[itemId];
+  state.checks[itemId] = isChecked;
+  saveState();
+
+  const box = document.getElementById(`box-${itemId}`);
+  const row = document.getElementById(`row-${itemId}`);
+  const label = document.getElementById(`label-${itemId}`);
+
+  box.classList.toggle('checked', isChecked);
+  row.classList.toggle('checked-row', isChecked);
+
+  updateProgress();
+}
+
+function saveNote(itemId, val) {
+  state.notes[itemId] = val;
+  saveState();
+}
+
+function updateProgress() {
+  let total = 0, done = 0;
+  SECTIONS.forEach((sec, si) => {
+    const secDone = sec.items.filter(it => state.checks[it.id]).length;
+    total += sec.items.length;
+    done += secDone;
+
+    const pct = sec.items.length ? Math.round(secDone / sec.items.length * 100) : 0;
+
+    const badge = document.getElementById(`badge-${si}`);
+    if (badge) badge.textContent = `${secDone}/${sec.items.length}`;
+
+    const pip = document.getElementById(`pip-fill-${si}`);
+    if (pip) pip.style.width = pct + '%';
+
+    const sumFrac = document.getElementById(`sum-frac-${si}`);
+    if (sumFrac) sumFrac.textContent = `${secDone}/${sec.items.length}`;
+
+    const sumFill = document.getElementById(`sum-fill-${si}`);
+    if (sumFill) sumFill.style.width = pct + '%';
+
+    const dnavCount = document.getElementById(`dnav-count-${si}`);
+    if (dnavCount) dnavCount.textContent = `${secDone}/${sec.items.length}`;
+  });
+
+  const pct = total ? Math.round(done / total * 100) : 0;
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-text').textContent = `${done} / ${total}`;
+
+  const banner = document.getElementById('complete-banner');
+  if (banner) banner.classList.toggle('show', done === total && total > 0);
+}
+
+function toggleDrawer(forceState) {
+  const drawer = document.getElementById('drawer');
+  const overlay = document.getElementById('drawer-overlay');
+  const hamburger = document.getElementById('hamburger');
+  const shouldOpen = forceState !== undefined ? forceState : !drawer.classList.contains('open');
+  drawer.classList.toggle('open', shouldOpen);
+  overlay.classList.toggle('open', shouldOpen);
+  hamburger.classList.toggle('open', shouldOpen);
+  document.body.style.overflow = shouldOpen ? 'hidden' : '';
+}
+
+function resetAll() {
+  if (!confirm('Reset all progress and notes?')) return;
+  state = { checks: {}, expanded: {}, notes: {}, sections: {} };
+  saveState();
+  toggleDrawer(false);
+  buildUI();
+  showToast('Progress reset');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+// ── INIT ──
+buildUI();
 </script>
 </body>
 </html>
