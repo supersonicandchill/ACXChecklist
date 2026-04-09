@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Sermon & Day Planner</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  /* ── Base ── */
+  *, *::before, *::after { box-sizing: border-box; }
+  body {
+    font-family: 'Georgia', serif;
+    background: #F0EBE3;
+    margin: 0; padding: 0; color: #1a1a1a;
+  }
+
+  /* ── Header ── */
+  header {
+    background: linear-gradient(135deg, #1B2D45 0%, #274d73 60%, #2C8C7C 100%);
+    color: white;
+    padding: 24px 20px 20px;
+    text-align: center;
+  }
+  header h1 {
+    margin: 0 0 4px;
+    font-size: 1.8em;
+    letter-spacing: 2px;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+  header p {
+    margin: 0;
+    font-size: 0.85em;
+    opacity: 0.75;
+    letter-spacing: 1px;
+    font-style: italic;
+  }
+
+  /* ── Save indicator ── */
+  #saveIndicator {
+    position: fixed;
+    top: 12px; right: 16px;
+    background: rgba(44,140,124,0.92);
+    color: white;
+    font-size: 0.78em;
+    padding: 5px 12px;
+    border-radius: 20px;
+    opacity: 0;
+    transition: opacity 0.4s;
+    z-index: 999;
+    pointer-events: none;
+    font-family: system-ui, sans-serif;
+  }
+  #saveIndicator.show { opacity: 1; }
+
+  /* ── Navigation tabs ── */
+  nav {
+    background: #1B2D45;
+    display: flex;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  nav::-webkit-scrollbar { display: none; }
+  nav button {
+    flex: 0 0 auto;
+    padding: 12px 18px;
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.6);
+    font-size: 0.82em;
+    cursor: pointer;
+    white-space: nowrap;
+    font-family: system-ui, sans-serif;
+    letter-spacing: 0.5px;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s;
+  }
+  nav button.active {
+    color: #E8763A;
+    border-bottom-color: #E8763A;
+    font-weight: 600;
+  }
+  nav button:hover:not(.active) {
+    color: rgba(255,255,255,0.9);
+    background: rgba(255,255,255,0.06);
+  }
+
+  /* ── Container ── */
+  .container { max-width: 860px; margin: auto; padding: 22px 16px 60px; }
+
+  /* ── Tabs ── */
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ── Cards ── */
+  .card {
+    background: white;
+    border-radius: 12px;
+    padding: 22px 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    border-left: 4px solid transparent;
+  }
+  .card.accent-orange { border-left-color: #E8763A; }
+  .card.accent-teal   { border-left-color: #2C8C7C; }
+  .card.accent-navy   { border-left-color: #1B2D45; }
+  .card.accent-gold   { border-left-color: #F0B429; }
+
+  h2 {
+    margin: 0 0 14px;
+    font-size: 1.05em;
+    font-weight: 700;
+    color: #1B2D45;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-family: system-ui, sans-serif;
+  }
+
+  /* ── Section labels (ME/WE/etc) ── */
+  .section-block { margin-bottom: 18px; }
+  .section-block:last-child { margin-bottom: 0; }
+  .section-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 7px;
+  }
+  .section-badge {
+    display: inline-block;
+    min-width: 52px;
+    text-align: center;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 0.78em;
+    font-weight: 700;
+    letter-spacing: 1px;
+    font-family: system-ui, sans-serif;
+    color: white;
+  }
+  .badge-me  { background: #E8763A; }
+  .badge-we  { background: #1B2D45; }
+  .badge-god { background: #2C8C7C; }
+  .badge-you { background: #F0B429; color: #1a1a1a; }
+  .badge-we2 { background: #1B2D45; }
+  .section-desc {
+    font-size: 0.8em;
+    color: #888;
+    font-family: system-ui, sans-serif;
+    font-style: italic;
+  }
+
+  /* ── Inputs ── */
+  textarea {
+    width: 100%;
+    min-height: 110px;
+    border: 1.5px solid #ddd;
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 1em;
+    resize: vertical;
+    background: #FAFAF8;
+    font-family: 'Georgia', serif;
+    color: #1a1a1a;
+    line-height: 1.6;
+    transition: border-color 0.2s;
+  }
+  textarea:focus { outline: none; border-color: #3a6ea5; background: white; }
+
+  textarea.bottom-line-ta {
+    min-height: 60px;
+    font-size: 1.15em;
+    font-style: italic;
+    color: #1B2D45;
+    font-weight: 600;
+    border-color: #E8763A;
+    border-width: 2px;
+  }
+  textarea.bottom-line-ta:focus { border-color: #c45d20; }
+
+  input[type="text"] {
+    width: 100%;
+    padding: 11px 14px;
+    font-size: 0.98em;
+    border-radius: 8px;
+    border: 1.5px solid #ddd;
+    background: #FAFAF8;
+    font-family: system-ui, sans-serif;
+    transition: border-color 0.2s;
+  }
+  input[type="text"]:focus { outline: none; border-color: #3a6ea5; background: white; }
+
+  /* ── Verses ── */
+  .verse-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+    align-items: center;
+  }
+  .verse-row input { flex: 1; }
+  .verse-remove {
+    flex: 0 0 auto;
+    background: #fee;
+    border: none;
+    border-radius: 6px;
+    color: #c00;
+    width: 34px; height: 34px;
+    cursor: pointer;
+    font-size: 1.1em;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s;
+  }
+  .verse-remove:hover { background: #fcc; }
+
+  /* ── Buttons ── */
+  .btn {
+    display: inline-block;
+    padding: 11px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.92em;
+    font-family: system-ui, sans-serif;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    transition: all 0.18s;
+    margin-right: 10px;
+    margin-top: 8px;
+  }
+  .btn-primary   { background: #1B2D45; color: white; }
+  .btn-primary:hover { background: #274d73; }
+  .btn-orange    { background: #E8763A; color: white; }
+  .btn-orange:hover { background: #c45d20; }
+  .btn-teal      { background: #2C8C7C; color: white; }
+  .btn-teal:hover { background: #1f6b5e; }
+  .btn-secondary { background: #eee; color: #333; }
+  .btn-secondary:hover { background: #ddd; }
+
+  /* ── Tips accordion ── */
+  details {
+    background: #F7F3EE;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 10px;
+    border-left: 3px solid #2C8C7C;
+  }
+  details summary {
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.95em;
+    color: #1B2D45;
+    font-family: system-ui, sans-serif;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  details summary::before { content: '▶'; font-size: 0.7em; color: #2C8C7C; transition: transform 0.2s; }
+  details[open] summary::before { transform: rotate(90deg); }
+  details ul { margin: 10px 0 4px 18px; line-height: 1.7; font-family: system-ui, sans-serif; font-size: 0.92em; color: #333; }
+
+  /* ── Help note ── */
+  .help-note {
+    font-size: 0.82em;
+    color: #888;
+    margin-top: 6px;
+    font-family: system-ui, sans-serif;
+    font-style: italic;
+  }
+
+  /* ── Footer ── */
+  footer {
+    background: #1B2D45;
+    color: rgba(255,255,255,0.5);
+    text-align: center;
+    padding: 14px;
+    font-size: 0.78em;
+    font-style: italic;
+    font-family: system-ui, sans-serif;
+    margin-top: 20px;
+  }
+
+  /* ── Mobile ── */
+  @media (max-width: 600px) {
+    header h1 { font-size: 1.3em; }
+    nav button { padding: 11px 14px; font-size: 0.78em; }
+    .container { padding: 14px 12px 60px; }
+    .card { padding: 16px 14px; }
+    .btn { width: 100%; margin-right: 0; margin-bottom: 8px; display: block; text-align: center; }
+    textarea { font-size: 1em; min-height: 90px; }
+  }
+</style>
+</head>
+<body>
+
+<div id="saveIndicator">✓ Saved</div>
+
+<header>
+  <h1>Sermon &amp; Day Planner</h1>
+  <p>Prepare · Preach · Plan</p>
+</header>
+
+<nav id="mainNav">
+  <button class="active" onclick="showTab('sermon')">📖 Sermon</button>
+  <button onclick="showTab('outline')">🗂 Outline</button>
+  <button onclick="showTab('ideas')">💡 Ideas</button>
+  <button onclick="showTab('daily')">📅 Daily Plan</button>
+  <button onclick="showTab('tips')">🎤 Tips</button>
+  <button onclick="showTab('export')">⬇ Export</button>
+</nav>
+
+<div class="container">
+
+  <!-- ══════════ TAB: SERMON ══════════ -->
+  <div id="tab-sermon" class="tab-panel active">
+
+    <div class="card accent-orange">
+      <h2>Bottom Line</h2>
+      <textarea id="bottomLine" class="bottom-line-ta" placeholder="One memorable sentence that captures your entire sermon…" oninput="scheduleSave()"></textarea>
+      <p class="help-note">This appears first in every export. Make it singular and sticky.</p>
+    </div>
+
+    <div class="card accent-teal">
+      <h2>Sermon Notes</h2>
+      <textarea id="sermonNotes" style="min-height:160px;" placeholder="Full sermon notes, Scripture references, key points…" oninput="scheduleSave()"></textarea>
+    </div>
+
+    <div class="card accent-navy">
+      <h2>Reference Verses</h2>
+      <div id="versesContainer"></div>
+      <button class="btn btn-secondary" onclick="addVerse()">+ Add Verse</button>
+    </div>
+
+    <div class="card accent-gold">
+      <h2>Illustrations</h2>
+      <textarea id="illustrations" placeholder="Stories, analogies, or illustrations that bring the message to life…" oninput="scheduleSave()"></textarea>
+    </div>
+
+  </div>
+
+  <!-- ══════════ TAB: OUTLINE (ME–WE–GOD–YOU–WE) ══════════ -->
+  <div id="tab-outline" class="tab-panel">
+
+    <div class="card" style="border-left:4px solid #E8763A; background:#fff8f5;">
+      <p style="margin:0 0 4px; font-size:0.82em; color:#888; font-family:system-ui,sans-serif; font-style:italic;">Andy Stanley's talk structure — fill in each section for a complete outline.</p>
+    </div>
+
+    <div class="card accent-orange">
+      <div class="section-block">
+        <div class="section-label">
+          <span class="section-badge badge-me">ME</span>
+          <span class="section-desc">Personal connection — your story that opens the tension</span>
+        </div>
+        <textarea id="meSection" placeholder="Start with a personal story or experience that draws the audience in…" oninput="scheduleSave()"></textarea>
+      </div>
+    </div>
+
+    <div class="card accent-navy">
+      <div class="section-block">
+        <div class="section-label">
+          <span class="section-badge badge-we">WE</span>
+          <span class="section-desc">Shared experience — the universal tension everyone feels</span>
+        </div>
+        <textarea id="weSection" placeholder="Expand the tension to include the whole audience — 'We've all been there…'" oninput="scheduleSave()"></textarea>
+      </div>
+    </div>
+
+    <div class="card accent-teal">
+      <div class="section-block">
+        <div class="section-label">
+          <span class="section-badge badge-god">GOD</span>
+          <span class="section-desc">Scripture and teaching — what God says about this tension</span>
+        </div>
+        <textarea id="godSection" placeholder="Scripture text, theological point, and explanation…" oninput="scheduleSave()"></textarea>
+      </div>
+    </div>
+
+    <div class="card accent-gold">
+      <div class="section-block">
+        <div class="section-label">
+          <span class="section-badge badge-you">YOU</span>
+          <span class="section-desc">Specific call to action — what should they do this week?</span>
+        </div>
+        <textarea id="youSection" placeholder="A single, concrete next step for each person in the room…" oninput="scheduleSave()"></textarea>
+      </div>
+    </div>
+
+    <div class="card" style="border-left:4px solid #1B2D45;">
+      <div class="section-block">
+        <div class="section-label">
+          <span class="section-badge badge-we2">WE</span>
+          <span class="section-desc">Closing vision — what could our community look like if everyone acted?</span>
+        </div>
+        <textarea id="we2Section" placeholder="Paint the picture of collective transformation — send them out with vision…" oninput="scheduleSave()"></textarea>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══════════ TAB: IDEAS ══════════ -->
+  <div id="tab-ideas" class="tab-panel">
+    <div class="card accent-gold">
+      <h2>Sermon Ideas</h2>
+      <textarea id="sermonIdeas" style="min-height:200px;" placeholder="Future series, topic seeds, one-liners, questions worth exploring…" oninput="saveIdeas()"></textarea>
+    </div>
+  </div>
+
+  <!-- ══════════ TAB: DAILY PLAN ══════════ -->
+  <div id="tab-daily" class="tab-panel">
+    <div class="card accent-teal">
+      <h2>Daily Planning</h2>
+      <textarea id="dailyPlan" style="min-height:220px;" placeholder="Today's tasks, visits, counseling, study schedule, prep checklist…" oninput="scheduleSave()"></textarea>
+    </div>
+  </div>
+
+  <!-- ══════════ TAB: TIPS ══════════ -->
+  <div id="tab-tips" class="tab-panel">
+    <div class="card accent-teal">
+      <h2>Public Speaking Tips (Andy Stanley)</h2>
+
+      <details>
+        <summary>ME – WE – GOD – YOU – WE Framework</summary>
+        <ul>
+          <li><b>ME:</b> Open with your own story. Create tension the audience can feel.</li>
+          <li><b>WE:</b> Widen the lens — this is everyone's story too.</li>
+          <li><b>GOD:</b> Bring in Scripture. What does God say about this tension?</li>
+          <li><b>YOU:</b> Give one specific, actionable next step.</li>
+          <li><b>WE:</b> Close with collective vision — what changes if we all do this?</li>
+        </ul>
+      </details>
+
+      <details>
+        <summary>One Bottom Line</summary>
+        <ul>
+          <li>Every great sermon can be distilled into one memorable sentence.</li>
+          <li>Write your Bottom Line first — let it govern every other decision.</li>
+          <li>If you can't say it in a sentence, you don't know what you're preaching yet.</li>
+        </ul>
+      </details>
+
+      <details>
+        <summary>Create and Hold Tension</summary>
+        <ul>
+          <li>Introduce a compelling question or dilemma early.</li>
+          <li>Resist resolving the tension too quickly — let it breathe.</li>
+          <li>Resolution is the reward for patient listeners.</li>
+        </ul>
+      </details>
+
+      <details>
+        <summary>Engage Emotion + Intellect</summary>
+        <ul>
+          <li>Stories, humor, and vivid language reach the heart.</li>
+          <li>Scripture, logic, and evidence satisfy the mind.</li>
+          <li>The best sermons do both at once.</li>
+        </ul>
+      </details>
+
+      <details>
+        <summary>Practical Delivery Tips</summary>
+        <ul>
+          <li>Slow down when making your most important points.</li>
+          <li>Pause after the Bottom Line — let it land.</li>
+          <li>Make eye contact with individuals, not the crowd.</li>
+          <li>Move with purpose; stillness signals gravity.</li>
+          <li>End before they want you to.</li>
+        </ul>
+      </details>
+    </div>
+  </div>
+
+  <!-- ══════════ TAB: EXPORT ══════════ -->
+  <div id="tab-export" class="tab-panel">
+    <div class="card accent-navy">
+      <h2>Export Options</h2>
+      <button class="btn btn-primary" onclick="exportText()">⬇ Export as .txt</button>
+      <button class="btn btn-orange" onclick="exportOutline()">🖨 Print-Friendly Outline</button>
+      <p class="help-note">All content auto-saves to your browser every second. No data leaves your device.</p>
+    </div>
+
+    <div class="card accent-teal" style="text-align:center;">
+      <h2>Danger Zone</h2>
+      <button class="btn btn-secondary" onclick="clearAll()">🗑 Clear All Data</button>
+      <p class="help-note">This will permanently erase all saved content. Cannot be undone.</p>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<footer>
+  "Preach the word; be ready in season and out of season." — 2 Timothy 4:2
+</footer>
+
+<script>
+// ── Tab Navigation ──────────────────────────────────────────────
+function showTab(id) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  const btns = document.querySelectorAll('nav button');
+  const map = ['sermon','outline','ideas','daily','tips','export'];
+  const idx = map.indexOf(id);
+  if (idx >= 0) btns[idx].classList.add('active');
+}
+
+// ── Save / Load ─────────────────────────────────────────────────
+let saveTimer = null;
+
+function scheduleSave() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(save, 900);
+}
+
+function getVerses() {
+  return [...document.querySelectorAll('.verse-input')].map(v => v.value.trim()).filter(v => v);
+}
+
+function buildData() {
+  return {
+    bottomLine:  document.getElementById('bottomLine').value,
+    sermonNotes: document.getElementById('sermonNotes').value,
+    meSection:   document.getElementById('meSection').value,
+    weSection:   document.getElementById('weSection').value,
+    godSection:  document.getElementById('godSection').value,
+    youSection:  document.getElementById('youSection').value,
+    we2Section:  document.getElementById('we2Section').value,
+    illustrations: document.getElementById('illustrations').value,
+    dailyPlan:   document.getElementById('dailyPlan').value,
+    verses:      getVerses()
+  };
+}
+
+function save() {
+  try {
+    localStorage.setItem('sermonPlannerData', JSON.stringify(buildData()));
+    saveIdeas();
+    flashSaved();
+  } catch(e) {
+    console.warn('Save failed:', e);
+  }
+}
+
+function saveIdeas() {
+  try {
+    localStorage.setItem('sermonIdeasData', document.getElementById('sermonIdeas').value);
+  } catch(e) {}
+}
+
+function flashSaved() {
+  const el = document.getElementById('saveIndicator');
+  el.classList.add('show');
+  clearTimeout(el._hideTimer);
+  el._hideTimer = setTimeout(() => el.classList.remove('show'), 1600);
+}
+
+function load() {
+  let data;
+  try { data = JSON.parse(localStorage.getItem('sermonPlannerData')); } catch(e) {}
+  if (data) {
+    const set = (id, val) => { const el = document.getElementById(id); if(el) el.value = val || ''; };
+    set('bottomLine',   data.bottomLine);
+    set('sermonNotes',  data.sermonNotes);
+    set('meSection',    data.meSection);
+    set('weSection',    data.weSection);
+    set('godSection',   data.godSection);
+    set('youSection',   data.youSection);
+    set('we2Section',   data.we2Section);
+    set('illustrations',data.illustrations);
+    set('dailyPlan',    data.dailyPlan);
+    const vc = document.getElementById('versesContainer');
+    vc.innerHTML = '';
+    if (Array.isArray(data.verses) && data.verses.length) {
+      data.verses.forEach(v => addVerse(v));
+    }
+  }
+  // Ideas always load from their own key — never cleared with the rest
+  try {
+    const ideas = localStorage.getItem('sermonIdeasData');
+    if (ideas !== null) document.getElementById('sermonIdeas').value = ideas;
+  } catch(e) {}
+}
+
+// Auto-save every 1 second as a safety net
+setInterval(save, 1000);
+
+// ── Verses ──────────────────────────────────────────────────────
+function addVerse(val) {
+  val = (typeof val === 'string') ? val : '';
+  const row = document.createElement('div');
+  row.className = 'verse-row';
+  const inp = document.createElement('input');
+  inp.type = 'text';
+  inp.className = 'verse-input';
+  inp.value = val;
+  inp.placeholder = 'e.g., Romans 8:28';
+  inp.addEventListener('input', scheduleSave);
+  const btn = document.createElement('button');
+  btn.className = 'verse-remove';
+  btn.title = 'Remove verse';
+  btn.textContent = '×';
+  btn.addEventListener('click', () => { row.remove(); scheduleSave(); });
+  row.appendChild(inp);
+  row.appendChild(btn);
+  document.getElementById('versesContainer').appendChild(row);
+}
+
+// ── Clear All ───────────────────────────────────────────────────
+function clearAll() {
+  if (!confirm('Clear all saved data? This cannot be undone.')) return;
+  localStorage.removeItem('sermonPlannerData');
+  ['bottomLine','sermonNotes','meSection','weSection','godSection','youSection','we2Section','illustrations','dailyPlan']
+    .forEach(id => document.getElementById(id).value = '');
+  document.getElementById('versesContainer').innerHTML = '';
+}
+
+// ── Export: Text ─────────────────────────────────────────────────
+function exportText() {
+  const d = buildData();
+  save(); // ensure latest
+  const verses = d.verses.length ? d.verses.map(v => '  • ' + v).join('\n') : '  (none)';
+  const line = '─'.repeat(52);
+  const text = [
+    'SERMON PREPARATION NOTES',
+    line,
+    '',
+    'BOTTOM LINE:',
+    d.bottomLine || '(not set)',
+    '',
+    line,
+    'ME – WE – GOD – YOU – WE',
+    line,
+    '',
+    'ME  (Personal connection):',
+    d.meSection || '(empty)',
+    '',
+    'WE  (Shared tension):',
+    d.weSection || '(empty)',
+    '',
+    'GOD  (Scripture & teaching):',
+    d.godSection || '(empty)',
+    '',
+    'YOU  (Call to action):',
+    d.youSection || '(empty)',
+    '',
+    'WE  (Closing vision):',
+    d.we2Section || '(empty)',
+    '',
+    line,
+    'REFERENCE VERSES:',
+    verses,
+    '',
+    line,
+    'ILLUSTRATIONS:',
+    d.illustrations || '(empty)',
+    '',
+    line,
+    'SERMON NOTES:',
+    d.sermonNotes || '(empty)',
+    '',
+    line,
+    'DAILY PLANNING:',
+    d.dailyPlan || '(empty)',
+    '',
+  ].join('\n');
+
+  const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'sermon_planner_' + datestamp() + '.txt';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 500);
+}
+
+// ── Export: Print Outline ────────────────────────────────────────
+function exportOutline() {
+  const d = buildData();
+  save();
+  const versesHtml = d.verses.length
+    ? d.verses.map(v => '<li>' + esc(v) + '</li>').join('')
+    : '<li style="color:#888">No verses added</li>';
+
+  const html = `<!DOCTYPE html><html lang="en"><head>
+<meta charset="UTF-8">
+<title>Sermon Outline</title>
+<style>
+  body { font-family: 'Georgia', serif; padding: 50px 60px; max-width: 720px; margin: auto; color: #1a1a1a; background: #fff; }
+  h1 { text-align:center; color: #1B2D45; font-size: 1.6em; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 4px; }
+  .subtitle { text-align:center; color:#888; font-style:italic; font-size:0.9em; margin-bottom:36px; }
+  .bottom-line-box {
+    border: 2px solid #E8763A;
+    border-radius: 10px;
+    padding: 18px 22px;
+    margin-bottom: 32px;
+    background: #fff8f5;
+  }
+  .bottom-line-box .label { font-size:0.72em; text-transform:uppercase; letter-spacing:2px; color:#E8763A; font-family:system-ui,sans-serif; font-weight:700; margin-bottom:6px; }
+  .bottom-line-box .text { font-size:1.2em; color:#1B2D45; font-style:italic; font-weight:600; line-height:1.4; }
+  .section { margin-bottom: 26px; }
+  .section-head {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 10px;
+  }
+  .badge {
+    display:inline-block; padding: 4px 14px; border-radius: 20px;
+    font-size: 0.75em; font-weight: 700; letter-spacing: 1px;
+    font-family: system-ui, sans-serif; color: white;
+  }
+  .badge-me  { background:#E8763A; }
+  .badge-we  { background:#1B2D45; }
+  .badge-god { background:#2C8C7C; }
+  .badge-you { background:#F0B429; color:#1a1a1a; }
+  .badge-we2 { background:#1B2D45; }
+  .section-desc { font-size:0.78em; color:#999; font-style:italic; font-family:system-ui,sans-serif; }
+  .section-body {
+    background: #F7F3EE; border-radius: 8px; padding: 14px 18px;
+    font-size: 0.98em; line-height: 1.7; white-space: pre-wrap;
+    color: #222;
+  }
+  .section-body.empty { color:#bbb; font-style:italic; }
+  h2 { font-size:0.85em; text-transform:uppercase; letter-spacing:2px; color:#2C8C7C; margin: 28px 0 10px; font-family:system-ui,sans-serif; border-bottom:1px solid #e0e0e0; padding-bottom:6px; }
+  ul { margin: 0; padding-left: 20px; line-height:1.8; }
+  .body-text { background:#F7F3EE; border-radius:8px; padding:14px 18px; white-space:pre-wrap; font-size:0.98em; line-height:1.7; }
+  .body-text.empty { color:#bbb; font-style:italic; }
+  footer { margin-top:50px; text-align:center; color:#bbb; font-size:0.8em; font-style:italic; border-top:1px solid #eee; padding-top:16px; }
+  @media print { body { padding: 20px 30px; } }
+</style>
+</head><body>
+<h1>Sermon Outline</h1>
+<p class="subtitle">Prepared with Sermon &amp; Day Planner</p>
+
+<div class="bottom-line-box">
+  <div class="label">Bottom Line</div>
+  <div class="text">${esc(d.bottomLine) || '<span style="color:#ccc;font-style:italic;">Not set</span>'}</div>
+</div>
+
+${mwgywSection('ME', 'badge-me', 'Personal connection', d.meSection)}
+${mwgywSection('WE', 'badge-we', 'Shared tension', d.weSection)}
+${mwgywSection('GOD', 'badge-god', 'Scripture &amp; teaching', d.godSection)}
+${mwgywSection('YOU', 'badge-you', 'Call to action', d.youSection)}
+${mwgywSection('WE', 'badge-we2', 'Closing vision', d.we2Section)}
+
+<h2>Reference Verses</h2>
+<ul>${versesHtml}</ul>
+
+<h2>Illustrations</h2>
+<div class="body-text${!d.illustrations ? ' empty' : ''}">${esc(d.illustrations) || 'None added'}</div>
+
+<footer>"Preach the word; be ready in season and out of season." — 2 Timothy 4:2</footer>
+</body></html>`;
+
+  function mwgywSection(label, badgeClass, desc, content) {
+    const empty = !content || !content.trim();
+    return `<div class="section">
+  <div class="section-head">
+    <span class="badge ${badgeClass}">${label}</span>
+    <span class="section-desc">${desc}</span>
+  </div>
+  <div class="section-body${empty ? ' empty' : ''}">${empty ? '(not filled in)' : esc(content)}</div>
+</div>`;
+  }
+
+  const win = window.open('', '_blank');
+  if (!win) { alert('Pop-up blocked. Please allow pop-ups for this page.'); return; }
+  win.document.write(html);
+  win.document.close();
+  win.focus();
+  setTimeout(() => win.print(), 600);
+}
+
+// ── Helpers ──────────────────────────────────────────────────────
+function esc(str) {
+  if (!str) return '';
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function datestamp() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
+// ── Init ─────────────────────────────────────────────────────────
+load();
+</script>
+</body>
+</html>
